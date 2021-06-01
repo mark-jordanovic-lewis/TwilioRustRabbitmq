@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$USER_HOME$/Documents/talks/rust/.idea/rust.iml" filepath="$USER_HOME$/Documents/talks/rust/.idea/rust.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/rust-twilio-df-stream.iml" filepath="$PROJECT_DIR$/.idea/rust-twilio-df-stream.iml" />
+    </modules>
+  </component>
+</project>

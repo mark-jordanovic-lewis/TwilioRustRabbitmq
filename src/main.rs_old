@@ -1,0 +1,71 @@
+/*
+ * Includes
+ */
+use std::env;
+use std::thread;
+use std::io::prelude::*;
+
+use tokio::net::{TcpListener, TcpStream};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+use twilio_async;
+use twiml;
+use twiml::Twiml;
+
+/*
+ * Constants
+ */
+const TWILIO_ACCOUNT_SID: &str = "";
+const TWILIO_ACCOUNT_TOKEN: &str = "";
+
+/*
+ * Main
+ */
+#[tokio::main]
+pub async fn main() {
+    start_server().await;
+}
+
+/*
+ * Standard async server
+ */
+async fn start_server() {
+    let listener = TcpListener::bind("127.0.0.1:7878").await.unwrap();
+
+    loop {
+        let (mut socket, _addr) = listener.accept().await.unwrap();
+        respond_with_twiml(socket).await;
+    }
+}
+
+async fn respond_with_twiml(mut socket: TcpStream) {
+    tokio::spawn(async move {
+        let mut buf = [0; 1024];
+
+        loop {
+            let n = match socket.read(&mut buf).await {
+                Ok(n) if n == 0 => return,
+                Ok(n) => n,
+                Err(e) => {
+                    eprintln!("Failed to write to socket; err = {:?}", e);
+                    return;
+                }
+            };
+
+            let contents: String =
+                twiml::Response::new()
+                    .say("You have reached the endpoint")
+                    .build()
+                    .unwrap();
+            let response = format!(
+                "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nContent-Type: text/xml\r\n\r\n{}",
+                contents.len(),
+                contents
+            );
+            if let Err(e) = socket.write_all(response.as_bytes()).await {
+                eprintln!("Failed to write to socket; err = {:?}", e);
+                return;
+            }
+        }
+    });
+}
